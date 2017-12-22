@@ -1,0 +1,148 @@
+package madLib;
+import java.util.ArrayList;
+import java.util.Scanner;
+import java.io.*;
+class MadLib{
+	//Private variable to create a constructor
+	private ArrayList<String> list;
+
+	//The main method uses the play method 
+	//all other methods are called inside the play method
+	public static void main(String args[]) {	
+		MadLib obj=new MadLib();
+		String path="src\\madLib\\story.txt";
+		obj.play(path);
+	}
+
+	/*The following methods reads a txt file into
+	 * an arraylist of string line by line */
+	ArrayList<String> readFile(String filePath) {
+		//list is an arraylist of strings
+		this.list=new ArrayList<String>();		
+		//	String lineOut="";
+		try {
+			//creating the FileReader;
+			FileReader filereader = new FileReader(filePath);
+
+			//using the file reader and creating a BufferedReader
+			BufferedReader bufferedReader = new BufferedReader(filereader);
+
+			//reading the file, line by line
+			String line ="";
+
+			//readLine returns null once it has read all the lines!
+			while(line != null){
+				line = bufferedReader.readLine();
+				if(line!=null)
+					//adds line to list
+					list.add(line);}
+			//System.out.println(list);
+			bufferedReader.close();
+			//Catching exceptions for IO and file not found
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) { 
+			e.printStackTrace();
+		}
+		return list;
+	}
+
+	void ask(ArrayList<String> list) {
+		/*Story out is the final string which contains the 
+		 * story which is generated after taking all required 
+		 * input from user
+		 */
+		String storyOut="";
+		Scanner scan = new Scanner(System.in);
+		//looping through the entire array list
+		//each i corresponds to an entry in the array list starting from zero!
+		for(int i=0;i<list.size();i++) {
+			//Converting array list extracted to a string to perform string manipulations
+			String stringFromList=list.get(i);
+			//j corresponds to character position in the string extracted above.
+			for(int j=0;j<stringFromList.length();j++) {
+				//countBracketEndIndex will come in action one '[' has been detected
+				//the while loop is kept on until ']' is detected and after each while loop
+				//countBracketEndIndex is incremented 
+				//thus we ge the index position of '[' and ']'
+				int countBracketEndIndex=j;
+				if(stringFromList.charAt(j)=='[') {
+					while(stringFromList.charAt(countBracketEndIndex)!=']')
+						countBracketEndIndex +=1;
+					//Sub stringing the entire [---] word to perform string manipulation to it
+					String wordToReplace=stringFromList.substring(j, countBracketEndIndex+1);
+
+					//Taking input from user for a replacement word
+					//replaceWord method handles all the requirement 
+					//for 'a' and 'an' conditions
+					System.out.println(replaceWord(wordToReplace));
+					String replaceWordByUser=scan.nextLine();
+					while(replaceWordByUser.length()==0) {
+						System.out.println("Enter correct input");
+						replaceWordByUser=scan.nextLine();
+					}
+					stringFromList=replacedString(stringFromList,wordToReplace,
+							replaceWordByUser,countBracketEndIndex);
+				}
+			}		
+			storyOut=storyOut+stringFromList+"\n";
+		}
+		System.out.println(storyOut);
+	}
+	//the following method take input of original string, the bracket to be replaced
+	//the input provided by user, the count 
+	String replacedString(String stringFromList,
+			String wordToReplace,String replaceWord,int BracketEndIndex) {
+		//Substrings the string till the end of 1st ]
+		String stringTillBracketEnd=stringFromList.substring(0,BracketEndIndex+1);
+		//Substringing the rest of string i.e. from next char after ] till the end
+		String restOfString=stringFromList.substring(BracketEndIndex+1);
+		//replacing the [---] with the entry given from user!
+		stringTillBracketEnd=stringTillBracketEnd.replace(wordToReplace,replaceWord);
+		//returning the altererd string
+		return stringTillBracketEnd+restOfString;
+	}
+	String replaceWord(String wordCheck) {
+		//removing the sqauare bracket and extrating the content of square brackets
+		wordCheck=wordCheck.substring(1,wordCheck.length()-1);
+		//extracting the word inside the bracket and converting the first character to lowercase
+		char checkChar=wordCheck.toLowerCase().charAt(0);
+		//checking for vowels
+		if(checkChar=='a'||checkChar=='e'||
+				checkChar=='i'||checkChar=='o'
+				||checkChar=='u') {
+			return "Enter an "+wordCheck;}
+		//checking for other characters
+		else {
+			return "Enter a "+wordCheck;
+		}
+	}
+	//following method interacts with the user 
+	void play(String filePath) {
+		System.out.println("Let's play Mad Libs!!");
+		System.out.println("Press y to play");
+		boolean flag=false;
+		String userInput;
+		Scanner sc=new Scanner(System.in);;
+		while(flag==false) { 
+
+			System.out.println("Enter q/Q/Quit/quit to exit the game!");
+			userInput=sc.nextLine();
+			char userInCheck=userInput.toLowerCase().charAt(0);
+			if(userInCheck=='y') {
+				ask(readFile(filePath));
+				System.out.println("Press y to play again!");
+			}
+			else if(userInCheck=='q') {
+				flag=true;
+				System.out.println("Mad Libs is always fun!");
+				System.out.println("Goodbye!");
+			}
+			else {
+				System.out.println("Enter a valid input");
+				System.out.println("Press y to play");
+			}
+		}
+		sc.close();
+	}
+}
